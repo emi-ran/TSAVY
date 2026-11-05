@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TSAVY</title>
+  <link rel="stylesheet" href="panel.css">
+  <link rel="stylesheet" href="disclosure.css">
+  <link rel="stylesheet" href="chat.css">
+  <link rel="stylesheet" href="chat-motion.css">
+  <script src="panel.js" defer></script>
+  <script src="chat.js" defer></script>
+  <script src="ai.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">T<span>.</span></span><span>TSAVY<small>VİDEODAN ÖZE</small></span></div>
+    <button id="settings-toggle" class="icon-button" type="button" aria-label="API ayarları" aria-haspopup="dialog" title="API ayarları">⚙</button>
+  </header>
+  <main>
+    <div class="video-header"><div><p class="label"><span class="dot"></span> ŞİMDİ İZLENİYOR</p><h1 id="video-title">Video bekleniyor</h1></div><button id="refresh" class="icon-button" type="button" aria-label="Altyazıları yenile" title="Altyazıları yenile">↻</button></div>
+    <p id="status" class="status" role="status" aria-live="polite">Sekme kontrol ediliyor…</p>
+    <section class="summary-section" aria-labelledby="summary-title">
+      <div class="section-heading"><div><p class="label accent">KISA VE ÖZ</p><h2 id="summary-title">Videonun özü</h2></div><span class="section-number">01</span></div>
+      <p class="intro-copy">Uzun videolar, birkaç önemli fikir.</p>
+      <button id="summarize" class="primary summarize" type="button" disabled><span>Videoyu özetle</span><span aria-hidden="true">↗</span></button>
+      <p class="privacy-note">Video ve kanal bilgileri, açıklama ve altyazılar seçtiğin API'ye gönderilir.</p>
+      <p id="summary-status" class="form-status" role="status" aria-live="polite"></p>
+      <div id="summary-result" class="summary-result" hidden></div>
+    </section>
+    <section class="chat-section" aria-labelledby="chat-title">
+      <div class="chat-heading"><div><p class="label accent">VİDEOYLA SOHBET</p><h2 id="chat-title">Merak ettiğini sor.</h2></div><button id="chat-clear" class="chat-clear" type="button" hidden>Temizle</button></div>
+      <p id="chat-intro" class="chat-intro">Videoda anlatılanlarla ilgili bir soru sor; kısa ve doğrudan yanıt al.</p>
+      <div id="chat-messages" class="chat-messages" aria-label="Sohbet mesajları" aria-live="polite"></div>
+      <p id="chat-status" class="form-status" role="status" aria-live="polite"></p>
+      <form id="chat-form" class="chat-form"><label class="visually-hidden" for="chat-input">Video hakkında soru</label><textarea id="chat-input" rows="1" placeholder="Sorunu yaz…" disabled></textarea><button id="chat-send" type="submit" aria-label="Soruyu gönder" disabled>↑</button></form>
+      <p class="chat-note">Sohbet, video ve kanal bilgileri, açıklama ve altyazılar seçtiğin API'ye gönderilir.</p>
+    </section>
+    <section class="transcript t-acc" data-open="false">
+      <button class="t-acc-head" type="button" aria-expanded="false" aria-controls="transcript-panel"><span><span class="label">TAM METİN</span><strong>Altyazılar</strong></span><span class="t-acc-chevron" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6.5L8 10.5L12 6.5"/></svg></span></button>
+      <div id="transcript-panel" class="t-acc-panel" inert><div class="t-acc-panel-inner"><div id="segments" class="segments"></div></div></div>
+    </section>
+  </main>
+  <footer>İZLE <span>·</span> ANLA <span>·</span> HATIRLA</footer>
+  <dialog id="settings" class="settings-dialog" aria-labelledby="settings-title">
+    <div class="t-modal" id="settings-surface">
+      <div class="dialog-heading"><div><p class="label accent">BAĞLANTI</p><h2 id="settings-title">API ayarları</h2></div><button id="settings-close" class="icon-button" type="button" aria-label="Ayarları kapat">×</button></div>
+      <p class="hint">OpenAI uyumlu API bilgilerini gir. Anahtar bu cihazda şifrelenmeden saklanır.</p>
+      <form id="settings-form">
+        <label for="endpoint">API adresi</label><input id="endpoint" type="url" placeholder="https://api.example.com/v1" required autocomplete="url">
+        <label for="api-key">API anahtarı</label><input id="api-key" type="password" placeholder="API anahtarı" autocomplete="off">
+        <label for="model">Model</label><div class="model-row"><div class="model-picker"><input id="model" type="text" placeholder="Model adı" required autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="models" aria-expanded="false"><div id="models" class="model-list" role="listbox" hidden></div></div><button type="button" id="load-models" class="secondary">Listele</button></div>
+        <p class="hint">Liste alınamazsa model adını elle yazabilirsin. Yerel sunucularda anahtar boş bırakılabilir.</p>
+        <div class="settings-actions"><button class="primary" type="submit">Kaydet</button><button class="text-button" type="button" id="clear-settings">Bağlantıyı sil</button></div>
+        <p id="settings-status" class="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </dialog>
+</body>
+</html>

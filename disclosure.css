@@ -1,0 +1,43 @@
+:root {
+  --acc-expand: 250ms;
+  --acc-collapse: 250ms;
+  --acc-chevron: 250ms;
+  --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.t-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open="true"] .t-acc-panel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+}
+.t-acc-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(2px);
+  transition: opacity var(--acc-collapse) var(--acc-ease), filter var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open="true"] .t-acc-panel-inner {
+  opacity: 1;
+  filter: blur(0);
+  transition: opacity var(--acc-expand) var(--acc-ease), filter var(--acc-expand) var(--acc-ease);
+}
+.t-acc-chevron {
+  display: inline-flex;
+  transform: scaleY(1);
+  transform-origin: center;
+  transition: transform var(--acc-chevron) var(--acc-ease);
+}
+.t-acc-chevron path { vector-effect: non-scaling-stroke; }
+.t-acc[data-open="true"] .t-acc-chevron { transform: scaleY(-1); }
+@media (prefers-reduced-motion: reduce) {
+  .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron { transition: none !important; }
+}
+.t-acc-head{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer;padding:18px 0;background:transparent;border:0;color:var(--ink)}
+.t-acc-head .label{display:block;margin-bottom:5px}.t-acc-chevron{color:var(--muted)}
+.model-picker{position:relative;min-width:0;flex:1}
+.model-list{position:absolute;z-index:2;top:calc(100% + 5px);left:0;right:0;max-height:190px;overflow:auto;background:#fffefa;border:1px solid var(--line);box-shadow:0 8px 20px #2728201a;padding:4px}
+.model-option{display:block;width:100%;padding:10px;text-align:left;border:0;background:transparent;color:var(--ink);font:12px/1.4 'Trebuchet MS',sans-serif;overflow-wrap:anywhere;cursor:pointer}
+.model-option:hover,.model-option[aria-selected="true"]{background:#f0ede4;color:var(--accent)}

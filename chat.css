@@ -1,0 +1,136 @@
+.chat-section {
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+}
+.chat-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.chat-heading h2 {
+  margin: 5px 0 0;
+  font:
+    normal 24px Georgia,
+    serif;
+}
+.chat-heading .label {
+  margin: 0;
+}
+.chat-intro {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 14px 0 16px;
+}
+.chat-clear {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font:
+    12px "Trebuchet MS",
+    sans-serif;
+  cursor: pointer;
+  padding: 8px;
+}
+.chat-clear:hover {
+  color: var(--accent);
+}
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.chat-messages:not(:empty) {
+  padding: 18px 0;
+}
+.chat-message {
+  max-width: 92%;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.chat-message.user {
+  align-self: flex-end;
+  background: #eae8de;
+  padding: 11px 14px;
+  border-radius: 14px 14px 3px 14px;
+}
+.chat-message.assistant {
+  align-self: flex-start;
+  padding: 0 2px;
+}
+.chat-role {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+.chat-message.assistant .chat-role {
+  color: var(--accent);
+}
+.chat-message p {
+  white-space: pre-wrap;
+  margin: 0;
+}
+.chat-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 6px 6px 6px 12px;
+}
+.chat-form:focus-within {
+  border-color: var(--accent);
+}
+.chat-form textarea {
+  resize: none;
+  min-height: 36px;
+  max-height: 120px;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font:
+    13px/1.5 "Trebuchet MS",
+    sans-serif;
+  padding: 8px 0;
+}
+.chat-form button {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  font-size: 21px;
+  cursor: pointer;
+}
+.chat-form button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.chat-note {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
