@@ -13,6 +13,20 @@ TSAVY konuşmayı kendisi yazıya dökmez: YouTube'un sunduğu transkripti kulla
 - OpenAI uyumlu servis adresini ve modeli seçme; destekleniyorsa model listesini görüntüleme.
 - Azaltılmış hareket tercihine uygun arayüz geçişleri.
 
+## Ekran görüntüleri
+
+**Video özeti** — YouTube videosunun yanında kısa özet ve transkriptteki zaman damgaları:
+
+![YouTube videosunun yanında TSAVY ile oluşturulmuş özet](docs/images/ozet.png)
+
+**Video hakkında sohbet** — Videoyla ilgili soru ve yanıt, altında transkript:
+
+![TSAVY yan panelinde video hakkında soru ve yanıt](docs/images/sohbet.png)
+
+**Transkript** — YouTube videosunun konuşma metni zaman damgalarıyla:
+
+![TSAVY yan panelinde zaman damgalı transkript](docs/images/transkript.png)
+
 ## Gereksinimler
 
 - Chrome 116 veya üzeri.
