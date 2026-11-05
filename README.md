@@ -1,8 +1,8 @@
 # TSAVY
 
-**TSAVY**, “Transcript Any Video on YouTube” fikrinden adını alan bir Chrome yan paneli eklentisidir. Açık YouTube videosunun erişilebilir transkriptini gösterir; istersen seçtiğin OpenAI uyumlu yapay zekâ servisiyle videoyu özetler ve video hakkında sohbet etmene yardımcı olur.
+**TSAVY** (Transcript Any Video on YouTube), YouTube videolarının erişilebilir konuşma metinlerini Chrome yan panelinde okumanı sağlar. İstersen kendi seçtiğin OpenAI uyumlu bir API ile videoyu özetleyebilir ve video hakkında sorular sorabilirsin.
 
-> TSAVY kendi konuşma tanıma modelini çalıştırmaz. Yalnızca YouTube'un o video için sunduğu erişilebilir transkripti okur; bu nedenle her videoda çalışacağı garanti değildir.
+TSAVY konuşmayı kendisi yazıya dökmez: YouTube'un sunduğu transkripti kullanır. Transkript görüntülemek için API anahtarı gerekmez.
 
 ## Özellikler
 
@@ -21,9 +21,10 @@
 
 ## Kurulum
 
-1. Chrome'da `chrome://extensions` adresini aç ve **Geliştirici modu**nu etkinleştir.
-2. **Paketlenmemiş öğe yükle** seçeneğine tıkla ve bu depo klasörünü seç.
-3. YouTube'da bir video açıp araç çubuğundaki TSAVY simgesine tıkla. Gerekirse simgeyi eklentiler menüsünden sabitle.
+1. Bu depoyu bilgisayarına indir veya klonla.
+2. Chrome'da `chrome://extensions` adresini aç ve **Geliştirici modu**nu etkinleştir.
+3. **Paketlenmemiş öğe yükle** seçeneğine tıkla ve `manifest.json` dosyasını içeren depo klasörünü seç.
+4. YouTube'da bir video açıp araç çubuğundaki TSAVY simgesine tıkla. Gerekirse simgeyi eklentiler menüsünden sabitle.
 
 Depodaki dosyalar değiştiğinde `chrome://extensions` sayfasında TSAVY'yi yenile; ardından YouTube sayfasını yenileyip paneli tekrar aç.
 
@@ -61,6 +62,14 @@ Tamamlanan özetler panel açıkken sekme ve video bazında bellekte tutulur; ay
 - Eklenti `www.youtube.com/watch` sayfalarında ve YouTube'un sağladığı seçili dildeki transkriptle çalışır. Transkripti olmayan ya da erişim sunulmayan videoları yazıya dökmez.
 - Transkript düğmesi şu anda Türkçe ve İngilizce YouTube arayüzlerinde aranır. YouTube'un arayüzündeki değişiklikler metnin okunmasını etkileyebilir.
 - Otomatik altyazılar, video açıklamaları ve yapay zekâ yanıtları hatalı veya eksik olabilir. Önemli bilgileri videodan ve güvenilir kaynaklardan doğrula.
+
+## Sorun giderme
+
+| Durum | Kontrol |
+| --- | --- |
+| Transkript bulunamıyor | Videonun YouTube'da konuşma metni sunduğunu ve arayüz dilinin Türkçe veya İngilizce olduğunu kontrol et. Sayfayı yenileyip panelde tekrar dene. |
+| Model listesi alınamıyor | API adresini ve gerekiyorsa anahtarı kontrol et. Sağlayıcı listeleme uç noktasını desteklemiyorsa model kimliğini elle gir. |
+| Özet veya sohbet yanıtı gelmiyor | API adresini, modeli ve erişim iznini kontrol et. Uzun transkriptler veya sohbetler modelin bağlam sınırını aşabilir. |
 
 ## Proje yapısı
 
