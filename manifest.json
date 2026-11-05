@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "TSAVY — YouTube Altyazıları",
+  "name": "TSAVY",
   "version": "0.1.0",
   "description": "YouTube transkriptlerini görüntüler ve seçtiğiniz yapay zekâ ile özetler.",
   "minimum_chrome_version": "116",
