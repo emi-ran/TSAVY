@@ -4,6 +4,8 @@
 
 TSAVY konuşmayı kendisi yazıya dökmez: YouTube'un sunduğu transkripti kullanır. Transkript görüntülemek için API anahtarı gerekmez.
 
+Geliştirici: [emi-ran](https://github.com/emi-ran) · Kaynak kodu: [GitHub'da TSAVY](https://github.com/emi-ran/TSAVY).
+
 ## Özellikler
 
 - Normal YouTube videoları ve Shorts için transkripti zaman damgalarıyla yan panelde görüntüleme.
