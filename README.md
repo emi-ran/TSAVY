@@ -9,6 +9,7 @@ TSAVY konuşmayı kendisi yazıya dökmez: YouTube'un sunduğu transkripti kulla
 - Normal YouTube videoları ve Shorts için transkripti zaman damgalarıyla yan panelde görüntüleme.
 - Video başlığı, kanal bilgileri, açıklama ve transkriptten içeriğin kapsamına uygun özet oluşturma.
 - Video hakkında soru sorma; önceki mesajları bağlam olarak kullanma ve istendiğinde ayrıntılı yanıt alma.
+- Panel açıkken özetleri, sohbet geçmişini ve taslakları sekme ve video bazında koruma.
 - Özetteki geçerli zaman damgalarından videonun ilgili anına gitme.
 - OpenAI uyumlu servis adresini ve modeli seçme; destekleniyorsa model listesini görüntüleme.
 - Azaltılmış hareket tercihine uygun arayüz geçişleri.
@@ -35,12 +36,14 @@ TSAVY konuşmayı kendisi yazıya dökmez: YouTube'un sunduğu transkripti kulla
 
 ## Kurulum
 
-1. Bu depoyu bilgisayarına indir veya klonla.
+1. [En son sürümden](https://github.com/emi-ran/TSAVY/releases/latest) eklenti ZIP dosyasını indir ve kalıcı bir klasöre çıkar; alternatif olarak depoyu klonlayabilirsin.
 2. Chrome'da `chrome://extensions` adresini aç ve **Geliştirici modu**nu etkinleştir.
-3. **Paketlenmemiş öğe yükle** seçeneğine tıkla ve `manifest.json` dosyasını içeren depo klasörünü seç.
+3. **Paketlenmemiş öğe yükle** seçeneğine tıkla ve çıkardığın `manifest.json` dosyasını içeren klasörü seç.
 4. YouTube'da bir video açıp araç çubuğundaki TSAVY simgesine tıkla. Gerekirse simgeyi eklentiler menüsünden sabitle.
 
-Depodaki dosyalar değiştiğinde `chrome://extensions` sayfasında TSAVY'yi yenile; ardından YouTube sayfasını yenileyip paneli tekrar aç.
+Yeni bir sürüm kurarken ZIP dosyasını indirip mevcut eklenti klasöründeki dosyaları yenile. Ardından `chrome://extensions` sayfasında TSAVY'yi ve YouTube sayfasını yenileyip paneli tekrar aç. Klasörü taşımak veya silmek eklentinin çalışmasını etkiler.
+
+Panel açıldığında GitHub'daki son yayımlanmış sürüm kontrol edilir. Daha yeni bir sürüm varsa sürümler sayfasına bağlantı gösterilir; indirme ve kurulum otomatik yapılmaz. Kontrol başarısız olursa bildirim gösterilmez ve panel çalışmaya devam eder.
 
 ## Kullanım
 
@@ -57,7 +60,9 @@ Shorts videosunu açıp TSAVY panelini kullanabilirsin. Sonraki veya önceki Sho
 1. Panelde **API ayarları**nı aç.
 2. OpenAI uyumlu temel adresi gir; örneğin `https://api.example.com/v1`. Sonuna `/chat/completions` ekleme.
 3. Sağlayıcı gerektiriyorsa API anahtarını gir. Kimlik doğrulaması gerektirmeyen yerel sunucularda boş bırakılabilir.
-4. **Listele** ile destekleniyorsa modelleri getirip seç veya model kimliğini elle gir. **Kaydet**e basıp Chrome'un ilgili adrese erişim iznini onayla.
+4. **Listele** ile destekleniyorsa modelleri getirip seç veya model kimliğini elle gir.
+5. İstersen **Bağlantıyı test et** ile girili adresi, anahtarı ve modeli dene. Test seçili modele kısa bir sohbet isteği gönderir; sağlayıcı ücret uygulayabilir. Başarı, modelin metin yanıtı verdiğini gösterir.
+6. **Kaydet**e basıp Chrome'un ilgili adrese erişim iznini onayla; test veya listeleme sırasında da izin istenebilir.
 
 Uzak API adreslerinde HTTPS gerekir; HTTP yalnızca `localhost`, `127.0.0.1` ve `[::1]` için kullanılabilir. API, `POST /chat/completions` ve model listesi için `GET /models` uçlarında OpenAI uyumlu JSON desteklemelidir. Model listesi alınamasa da model adı elle girilebilir.
 
@@ -75,13 +80,15 @@ Tamamlanan özetler ve sohbet geçmişi panel açıkken sekme ve video bazında 
 
 - Transkript yalnızca görüntülendiğinde bir yapay zekâ servisine gönderilmez. Özet veya sohbet isteğinde video başlığı ve bağlantısı, kanal adı ve bağlantısı, video açıklaması ve transkript seçilen API'ye gönderilir. Sohbette önceki başarılı soru ve yanıtlar da gönderilir. Sağlayıcının gizlilik politikasını incele.
 - Video bağlantısı yalnızca video kimliğinden oluşturulur; URL'deki oynatma listesi gibi ek parametreler gönderilmez. Kanal bağlantısının sorgu ve parça bilgileri çıkarılır.
-- API adresi, model ve anahtar Chrome'un yerel eklenti depolamasında **şifrelenmeden** saklanır. Cihaza veya tarayıcı profiline erişebilen kişiler anahtara erişebilir. **Bağlantıyı sil** kayıtlı bilgileri kaldırır.
+- API adresi, model ve anahtar Chrome'un yerel eklenti depolamasında **şifrelenmeden** saklanır. Cihaza veya tarayıcı profiline erişebilen kişiler anahtara erişebilir. **Bağlantıyı sil**, onayından sonra kayıtlı bilgileri kaldırır.
 - Eklenti yan panel, etkin sekme, YouTube altyazısı ve bağlantı ayarları için Chrome izinleri kullanır; Shorts yedek sekmesini gruplamak için `tabGroups` izni gerekir. Yedek yolda açılan normal video sayfası YouTube izleme etkinliğine yansıyabilir. Seçilen API adresine erişim izni ayrıca istenir. YouTube oturum çerezleri ve altyazı isteğinin imzalı adresi eklenti depolamasına veya AI isteğine eklenmez.
 - Transkript kalıcı olarak saklanmaz. Uzun videolar ve sohbetler modelin bağlam sınırını aşabilir; sağlayıcı kullanım ücreti uygulayabilir.
+- Sürüm kontrolü GitHub API'sine istek gönderir; video, sohbet ve API anahtarı bu isteğe eklenmez. Bağlantı başarısızsa panel çalışmaya devam eder.
 
 ## Sınırlamalar
 
 - Eklenti `www.youtube.com/watch` ve `www.youtube.com/shorts/<video-kimliği>` sayfalarında YouTube'un sağladığı altyazıyla çalışır. İmzalı altyazı isteğine erişim YouTube tarafından engellenebilir; altyazısı veya erişim izni olmayan videoları yazıya dökmez.
+- Doğrudan altyazı isteği başarısız olduğunda yedek okuma için normal videoda transkript paneline, Shorts'ta ise aynı videonun normal sayfasındaki transkripte erişim gerekir.
 - Doğrudan okuma YouTube oynatıcı arayüzüne ve `json3` biçimine, yedek yol ise YouTube'un Türkçe veya İngilizce transkript arayüzüne bağlıdır. YouTube değişiklikleri bu yolları etkileyebilir.
 - Otomatik altyazılar, video açıklamaları ve yapay zekâ yanıtları hatalı veya eksik olabilir. Önemli bilgileri videodan ve güvenilir kaynaklardan doğrula.
 
@@ -90,6 +97,7 @@ Tamamlanan özetler ve sohbet geçmişi panel açıkken sekme ve video bazında 
 | Durum | Kontrol |
 | --- | --- |
 | Transkript bulunamıyor | Videoda altyazı olduğunu kontrol et; YouTube altyazılarını açıp panelde yeniden dene. |
+| Shorts için geçici sekme açılıyor | Doğrudan altyazı okuma başarısız olduğunda TSAVY yedek yöntem olarak geçici bir normal video sekmesi açar. |
 | Model listesi alınamıyor | API adresini ve gerekiyorsa anahtarı kontrol et. Sağlayıcı listeleme uç noktasını desteklemiyorsa model kimliğini elle gir. |
 | Özet veya sohbet yanıtı gelmiyor | API adresini, modeli ve erişim iznini kontrol et. Uzun transkriptler veya sohbetler modelin bağlam sınırını aşabilir. |
 
@@ -101,6 +109,7 @@ Tamamlanan özetler ve sohbet geçmişi panel açıkken sekme ve video bazında 
 | `panel.html`, `panel.css`, `panel.js` | Panel arayüzü, video takibi ve transkript yükleme |
 | `captions.js` | Video ve Shorts oynatıcısının altyazı isteği, `json3` satırları ve video bilgileri |
 | `transcript.js` | Normal video ve geçici Shorts sekmesinde kullanılan yedek transkript okuyucusu |
+| `update.js` | GitHub sürüm kontrolü ve güncelleme bildirimi |
 | `ai.js` | API bağlantısı, ayarlar ve özetleme |
 | `chat.js`, `chat.css`, `chat-motion.css` | Sohbet akışı, görünümü ve geçişleri |
 | `disclosure.css`, `icons/` | Açılır bölüm stilleri ve eklenti simgeleri |

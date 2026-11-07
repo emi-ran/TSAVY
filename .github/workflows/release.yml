@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release Extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify tag matches manifest version
+        id: verify-version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$TAG' does not follow vX.Y.Z semver format"
+            exit 1
+          fi
+
+          TAG_VERSION="${TAG#v}"
+          MANIFEST_VERSION=$(jq -r '.version' manifest.json)
+
+          if [ -z "$MANIFEST_VERSION" ] || [ "$MANIFEST_VERSION" = "null" ]; then
+            echo "::error::Could not read version from manifest.json"
+            exit 1
+          fi
+
+          if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match manifest.json version ($MANIFEST_VERSION)"
+            exit 1
+          fi
+
+          echo "Tag version ($TAG_VERSION) matches manifest.json version ($MANIFEST_VERSION)"
+
+      - name: Package extension into ZIP
+        run: |
+          ZIP_NAME="tsavy-${GITHUB_REF_NAME}.zip"
+          zip -r "$ZIP_NAME" \
+            manifest.json \
+            background.js \
+            panel.html \
+            panel.js \
+            panel.css \
+            chat.js \
+            chat.css \
+            chat-motion.css \
+            disclosure.css \
+            transcript.js \
+            captions.js \
+            update.js \
+            ai.js \
+            icons
+
+          echo "Extension packaged successfully: $ZIP_NAME"
+          unzip -l "$ZIP_NAME"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" "tsavy-${GITHUB_REF_NAME}.zip" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes

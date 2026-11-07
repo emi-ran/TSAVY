@@ -12,6 +12,7 @@
   <script src="captions.js" defer></script>
   <script src="panel.js" defer></script>
   <script src="chat.js" defer></script>
+  <script src="update.js" defer></script>
   <script src="ai.js" defer></script>
 </head>
 <body>
@@ -20,6 +21,12 @@
     <button id="settings-toggle" class="icon-button" type="button" aria-label="API ayarları" aria-haspopup="dialog" title="API ayarları">⚙</button>
   </header>
   <main>
+    <div class="update-region" id="update-region" data-open="false" inert>
+      <div class="update-region-inner"><aside class="update-notice" id="update-notice" aria-label="Sürüm bildirimi">
+        <div class="update-copy"><p class="label accent" id="update-label">GÜNCELLEME</p><strong id="update-title"></strong><p id="update-detail"></p><a href="https://github.com/emi-ran/TSAVY/releases/latest" target="_blank" rel="noopener noreferrer">Sürümleri incele <span aria-hidden="true">↗</span></a></div>
+        <button class="update-dismiss" id="update-dismiss" type="button" aria-label="Güncelleme bildirimini kapat">×</button>
+      </aside></div>
+    </div>
     <div class="video-header"><div><p class="label"><span class="dot"></span> ŞİMDİ İZLENİYOR</p><h1 id="video-title">Video bekleniyor</h1><p id="video-channel" class="video-channel" hidden></p></div><button id="refresh" class="icon-button" type="button" aria-label="Altyazıları yenile" title="Altyazıları yenile">↻</button></div>
     <p id="status" class="status" role="status" aria-live="polite">Sekme kontrol ediliyor…</p>
     <section class="summary-section" aria-labelledby="summary-title">
@@ -53,7 +60,16 @@
         <label for="api-key">API anahtarı</label><input id="api-key" type="password" placeholder="API anahtarı" autocomplete="off">
         <label for="model">Model</label><div class="model-row"><div class="model-picker"><input id="model" type="text" placeholder="Model adı" required autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="models" aria-expanded="false"><div id="models" class="model-list" role="listbox" hidden></div></div><button type="button" id="load-models" class="secondary">Listele</button></div>
         <p class="hint">Liste alınamazsa model adını elle yazabilirsin. Yerel sunucularda anahtar boş bırakılabilir.</p>
-        <div class="settings-actions"><button class="primary" type="submit">Kaydet</button><button class="text-button" type="button" id="clear-settings">Bağlantıyı sil</button></div>
+        <div class="settings-actions"><button class="primary" type="submit">Kaydet</button><button class="secondary" type="button" id="test-connection">Bağlantıyı test et</button><button class="text-button" type="button" id="clear-settings">Bağlantıyı sil</button></div>
+        <div id="clear-confirm" class="clear-confirm" data-open="false" inert>
+          <div class="clear-confirm-inner"><div class="clear-confirm-card" role="group" aria-labelledby="clear-confirm-title">
+            <strong id="clear-confirm-title">Bağlantı bilgileri silinsin mi?</strong>
+            <p>Kaydedilen API adresi, anahtar ve model bu cihazdan silinecek.</p>
+            <div class="settings-actions"><button class="secondary" id="cancel-clear" type="button">Vazgeç</button><button class="text-button clear-confirm-delete" id="confirm-clear" type="button">Evet, sil</button></div>
+          </div></div>
+        </div>
+        <p class="hint">Test, seçili modele kısa bir istek gönderir; sağlayıcı ücret uygulayabilir.</p>
+        <p id="test-status" class="form-status test-status" role="status" aria-live="polite"></p>
         <p id="settings-status" class="form-status" role="status" aria-live="polite"></p>
       </form>
     </div>

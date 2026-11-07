@@ -8,6 +8,26 @@ const endpoint = document.querySelector('#endpoint');
 const apiKey = document.querySelector('#api-key');
 const model = document.querySelector('#model');
 const models = document.querySelector('#models');
+const testConnection = document.querySelector('#test-connection');
+const testStatus = document.querySelector('#test-status');
+let testController = null;
+let testGeneration = 0;
+
+function setTestStatus(message, state = '') {
+  testStatus.textContent = message;
+  testStatus.dataset.state = state;
+  testStatus.style.animation = 'none';
+  void testStatus.offsetWidth;
+  testStatus.style.animation = '';
+}
+function cancelConnectionTest() {
+  testGeneration++;
+  testController?.abort();
+  testController = null;
+  testConnection.disabled = false;
+  setTestStatus('');
+}
+[endpoint, apiKey, model].forEach(input => input.addEventListener('input', cancelConnectionTest));
 let modelIds = [];
 let highlightedModel = -1;
 function updateModelList(showAll = false) {
@@ -37,6 +57,7 @@ function hideModelList() {
 function selectModel(index) {
   const option = models.children[index];
   if (!option) return;
+  cancelConnectionTest();
   model.value = option.textContent;
   hideModelList();
   model.focus();
@@ -93,6 +114,15 @@ function resetSummary() {
 }
 
 const settingsSurface = document.querySelector('#settings-surface');
+const clearConfirm = document.querySelector('#clear-confirm');
+const clearSettings = document.querySelector('#clear-settings');
+const cancelClear = document.querySelector('#cancel-clear');
+const confirmClear = document.querySelector('#confirm-clear');
+function hideClearConfirmation(restoreFocus = false) {
+  if (restoreFocus) clearSettings.focus();
+  clearConfirm.inert = true;
+  clearConfirm.dataset.open = 'false';
+}
 let settingsCloseTimer;
 function openSettings() {
   clearTimeout(settingsCloseTimer);
@@ -102,6 +132,8 @@ function openSettings() {
 }
 function closeSettings() {
   if (!settings.open || settingsSurface.classList.contains('is-closing')) return;
+  hideClearConfirmation();
+  cancelConnectionTest();
   settingsSurface.classList.remove('is-open');
   settingsSurface.classList.add('is-closing');
   const closeMs = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--modal-close-dur')) || 150;
@@ -187,7 +219,7 @@ function renderSummary(answer, current) {
 
 settingsToggle.addEventListener('click', openSettings);
 document.querySelector('#settings-close').addEventListener('click', closeSettings);
-settings.addEventListener('cancel', event => { event.preventDefault(); closeSettings(); });
+settings.addEventListener('cancel', event => { event.preventDefault(); if (clearConfirm.dataset.open === 'true') hideClearConfirmation(true); else closeSettings(); });
 settings.addEventListener('click', event => { if (event.target === settings) closeSettings(); });
 
 document.querySelector('#settings-form').addEventListener('submit', async event => {
@@ -202,11 +234,59 @@ document.querySelector('#settings-form').addEventListener('submit', async event 
   } catch (error) { settingsStatus.textContent = error.message; }
 });
 
-document.querySelector('#clear-settings').addEventListener('click', async () => {
-  await chrome.storage.local.remove('connection');
-  endpoint.value = apiKey.value = model.value = '';
-  modelIds = []; models.replaceChildren(); hideModelList();
-  settingsStatus.textContent = 'Bağlantı bilgileri silindi.';
+clearSettings.addEventListener('click', () => {
+  clearConfirm.inert = false;
+  clearConfirm.dataset.open = 'true';
+  cancelClear.focus();
+});
+cancelClear.addEventListener('click', () => hideClearConfirmation(true));
+confirmClear.addEventListener('click', async () => {
+  confirmClear.disabled = true;
+  try {
+    await chrome.storage.local.remove('connection');
+    cancelConnectionTest();
+    endpoint.value = apiKey.value = model.value = '';
+    modelIds = []; models.replaceChildren(); hideModelList();
+    hideClearConfirmation(true);
+    settingsStatus.textContent = 'Bağlantı bilgileri silindi.';
+  } catch (error) {
+    settingsStatus.textContent = `Bağlantı bilgileri silinemedi: ${error.message}`;
+  } finally { confirmClear.disabled = false; }
+});
+
+testConnection.addEventListener('click', async () => {
+  const generation = ++testGeneration;
+  testConnection.disabled = true;
+  setTestStatus('Bağlantı test ediliyor…', 'pending');
+  try {
+    const base = apiBase(endpoint.value);
+    const selectedModel = model.value.trim();
+    const key = apiKey.value.trim();
+    if (!selectedModel) throw new Error('Test için model adını gir.');
+    const permission = await requestPermission(base);
+    if (generation !== testGeneration) return;
+    if (!permission) throw new Error('API adresine erişim izni verilmedi.');
+    const controller = new AbortController();
+    testController = controller;
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    let data;
+    try {
+      data = await apiRequest(base, 'chat/completions', key, {
+        method: 'POST', signal: controller.signal,
+        body: JSON.stringify({ model: selectedModel, messages: [{ role: 'user', content: 'Merhaba.' }] })
+      });
+    } finally { clearTimeout(timeout); }
+    if (generation !== testGeneration) return;
+    if (typeof data?.choices?.[0]?.message?.content !== 'string' || !data.choices[0].message.content.trim()) throw new Error('Modelden geçerli bir metin yanıtı alınamadı.');
+    setTestStatus('Bağlantı başarılı; model yanıt verdi.', 'success');
+  } catch (error) {
+    if (generation === testGeneration) setTestStatus(error.name === 'AbortError' ? 'Test zaman aşımına uğradı.' : `Bağlantı başarısız: ${error.message}`, 'error');
+  } finally {
+    if (generation === testGeneration) {
+      testController = null;
+      testConnection.disabled = false;
+    }
+  }
 });
 
 document.querySelector('#load-models').addEventListener('click', async event => {
