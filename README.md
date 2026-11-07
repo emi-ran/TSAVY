@@ -44,15 +44,13 @@ Depodaki dosyalar değiştiğinde `chrome://extensions` sayfasında TSAVY'yi yen
 
 ## Kullanım
 
-Panel etkin sekme veya video değiştiğinde transkripti yeniden yükler. Yenile düğmesiyle elle tekrar deneyebilirsin. **Altyazılar** bölümünü açarak tam metni görebilirsin. Eklenti YouTube'un konuşma metni panelini kendisi açarsa okuma sonrasında kapatır; önceden açık olan paneli açık bırakır.
+Panel etkin sekme veya video değiştiğinde altyazıyı yeniden yükler. Yenile düğmesiyle elle tekrar deneyebilirsin. **Altyazılar** bölümünü açarak tam metni görebilirsin. Başlığın altında kanal adı ve bulunabilirse kullanıcı adı gösterilir; bu bilgiler özet ve sohbet bağlamına da eklenir. Önce oynatıcının `timedtext` isteği denenir; başarısız olursa normal videoda YouTube'un transkript paneli okunur ve eklentinin açtığı panel işlemden sonra kapatılır.
 
 ### Shorts
 
 Shorts videosunu açıp TSAVY panelini kullanabilirsin. Sonraki veya önceki Short'a geçtiğinde panel yeni videonun transkriptini yükler; özet ve sohbet normal videolardaki gibi çalışır. Özetteki zaman damgaları açık Shorts oynatıcısında ilgili ana gider.
 
-Eklenti önce Shorts oynatıcısının seçili dil için oluşturduğu güncel `timedtext` isteğinden altyazıları okur; bu yolda **yeni sekme açılmaz**. İstek adresi sayfanın kendi oturumunda kullanılır; çerez veya imzalı adres girmen gerekmez. Altyazılar zaten açıksa ve istek kaydı bulunamıyorsa seçili altyazı parçası yeniden yüklenir; altyazı açma/kapatma tercihin değiştirilmez.
-
-Doğrudan okuma mümkün değilse aynı videonun normal sayfası, izlediğin pencerenin **kapalı, mavi TSAVY sekme grubunda**, geçici, etkin olmayan ve sessize alınmış bir sekmede açılır. Kullanıcının mevcut gruplarına dokunulmaz. Sayfanın tamamen yüklenmesi değil, transkript öğelerinin hazır olması beklenir. Transkript okunduğunda, işlem başarısız olduğunda veya panel kapanıp istek iptal edildiğinde geçici sekme ve ona ait grup kaldırılır; izlediğin Shorts sekmesi değiştirilmez. Bu yedek yol ek bir YouTube sayfası yüklediği için daha uzun sürebilir. Geçici sekmeyi elle kapatmak okumayı keser.
+İstek adresi sayfanın kendi oturumunda kullanılır; çerez veya imzalı adres girmen gerekmez. Altyazı isteği henüz yoksa eklenti oynatıcıya isteği oluşturtmayı dener. Altyazılar kapalıysa bu sırada kısa süreli açılabilir ve önceki duruma döndürülür. Doğrudan okuma başarısız olursa aynı videonun normal sayfası geçici, sessiz, etkin olmayan bir sekmede ve kapalı TSAVY grubunda açılır; işlem bitince veya iptal edilince sekme ve grubu kapatılır.
 
 ### API bağlantısı
 
@@ -71,27 +69,27 @@ Sohbette Enter gönderir, Shift+Enter yeni satır ekler. Sohbet yanıtları vars
 
 Gönderilen soru hemen görünür; yanıt beklenirken durum göstergesi çıkar. İstek başarısız olursa soru yeniden denemen için giriş alanına döner. Özette yalnızca transkriptte bulunan zaman damgaları tıklanabilir; reklam sırasında videoda atlama yapılamaz.
 
-Tamamlanan özetler panel açıkken sekme ve video bazında bellekte tutulur; aynı sekmeye dönünce yeniden gösterilir. Sohbet geçmişi aynı videonun transkripti yenilendiğinde korunur, başka sekme veya videoya geçildiğinde ya da **Temizle** seçildiğinde silinir. Panel kapatıldığında bellekteki özet ve sohbetler silinir.
+Tamamlanan özetler ve sohbet geçmişi panel açıkken sekme ve video bazında bellekte tutulur; sekme veya video değiştirip geri dönünce ilgili geçmiş gösterilir. Bekleyen bir yanıt video değişiminde iptal edilir; soru taslak olarak korunur. **Temizle** yalnız o videonun sohbetini siler. Panel kapatıldığında bellekteki özet ve sohbetler silinir.
 
 ## Gizlilik ve izinler
 
 - Transkript yalnızca görüntülendiğinde bir yapay zekâ servisine gönderilmez. Özet veya sohbet isteğinde video başlığı ve bağlantısı, kanal adı ve bağlantısı, video açıklaması ve transkript seçilen API'ye gönderilir. Sohbette önceki başarılı soru ve yanıtlar da gönderilir. Sağlayıcının gizlilik politikasını incele.
 - Video bağlantısı yalnızca video kimliğinden oluşturulur; URL'deki oynatma listesi gibi ek parametreler gönderilmez. Kanal bağlantısının sorgu ve parça bilgileri çıkarılır.
 - API adresi, model ve anahtar Chrome'un yerel eklenti depolamasında **şifrelenmeden** saklanır. Cihaza veya tarayıcı profiline erişebilen kişiler anahtara erişebilir. **Bağlantıyı sil** kayıtlı bilgileri kaldırır.
-- Eklenti, yan paneli açmak, etkin sekmeyi belirlemek, YouTube altyazısını okumak, gerektiğinde geçici Shorts sekmesini TSAVY grubunda açıp kapatmak ve bağlantı ayarlarını saklamak için Chrome izinleri kullanır; grup yönetimi için `tabGroups` izni gerekir. Seçilen API adresine erişim izni ayrıca istenir. Yedek yolda açılan normal video sayfası YouTube'a yüklenir; bu, YouTube oturumunun izleme etkinliğine yansıyabilir. Doğrudan okuma yolunda bu ek sayfa açılmaz. YouTube oturum çerezleri ve altyazı isteğinin imzalı adresi eklenti depolamasına veya AI isteğine eklenmez.
+- Eklenti yan panel, etkin sekme, YouTube altyazısı ve bağlantı ayarları için Chrome izinleri kullanır; Shorts yedek sekmesini gruplamak için `tabGroups` izni gerekir. Yedek yolda açılan normal video sayfası YouTube izleme etkinliğine yansıyabilir. Seçilen API adresine erişim izni ayrıca istenir. YouTube oturum çerezleri ve altyazı isteğinin imzalı adresi eklenti depolamasına veya AI isteğine eklenmez.
 - Transkript kalıcı olarak saklanmaz. Uzun videolar ve sohbetler modelin bağlam sınırını aşabilir; sağlayıcı kullanım ücreti uygulayabilir.
 
 ## Sınırlamalar
 
-- Eklenti `www.youtube.com/watch` ve `www.youtube.com/shorts/<video-kimliği>` sayfalarında, YouTube'un sağladığı seçili dildeki altyazıyla çalışır. Shorts'ta oynatıcının güncel altyazı isteği okunamazsa normal video sayfasında erişilebilir transkript gerekir. Altyazı kapalıyken eklenti kendiliğinden açmaz; yedek yolu kullanabilir. Altyazısı veya erişim izni olmayan videoları yazıya dökmez.
-- Doğrudan okuma YouTube'un oynatıcı arayüzüne ve `json3` altyazı biçimine bağlıdır. Normal video ve yedek yolun transkript düğmesi Türkçe ve İngilizce YouTube arayüzlerinde aranır. YouTube değişiklikleri bu yolları etkileyebilir.
+- Eklenti `www.youtube.com/watch` ve `www.youtube.com/shorts/<video-kimliği>` sayfalarında YouTube'un sağladığı altyazıyla çalışır. İmzalı altyazı isteğine erişim YouTube tarafından engellenebilir; altyazısı veya erişim izni olmayan videoları yazıya dökmez.
+- Doğrudan okuma YouTube oynatıcı arayüzüne ve `json3` biçimine, yedek yol ise YouTube'un Türkçe veya İngilizce transkript arayüzüne bağlıdır. YouTube değişiklikleri bu yolları etkileyebilir.
 - Otomatik altyazılar, video açıklamaları ve yapay zekâ yanıtları hatalı veya eksik olabilir. Önemli bilgileri videodan ve güvenilir kaynaklardan doğrula.
 
 ## Sorun giderme
 
 | Durum | Kontrol |
 | --- | --- |
-| Transkript bulunamıyor | Shorts'ta altyazıyı açıp panelden yeniden dene. Yedek yol ve normal videolar için YouTube'da konuşma metni bulunduğunu ve arayüz dilinin Türkçe veya İngilizce olduğunu kontrol et. |
+| Transkript bulunamıyor | Videoda altyazı olduğunu kontrol et; YouTube altyazılarını açıp panelde yeniden dene. |
 | Model listesi alınamıyor | API adresini ve gerekiyorsa anahtarı kontrol et. Sağlayıcı listeleme uç noktasını desteklemiyorsa model kimliğini elle gir. |
 | Özet veya sohbet yanıtı gelmiyor | API adresini, modeli ve erişim iznini kontrol et. Uzun transkriptler veya sohbetler modelin bağlam sınırını aşabilir. |
 
@@ -99,10 +97,10 @@ Tamamlanan özetler panel açıkken sekme ve video bazında bellekte tutulur; ay
 
 | Dosya | Görev |
 | --- | --- |
-| `manifest.json`, `background.js` | Chrome eklenti izinleri, yan panelin açılması ve geçici Shorts sekmesinin yaşam döngüsü |
+| `manifest.json`, `background.js` | Eklenti izinleri, yan panel ve geçici Shorts sekmesinin yaşam döngüsü |
 | `panel.html`, `panel.css`, `panel.js` | Panel arayüzü, video takibi ve transkript yükleme |
-| `transcript.js` | Normal video ve geçici Shorts sekmesinde kullanılan ortak YouTube transkript okuyucusu |
-| `captions.js` | Shorts oynatıcısının güncel altyazı isteği, `json3` satırları ve video bilgileri |
+| `captions.js` | Video ve Shorts oynatıcısının altyazı isteği, `json3` satırları ve video bilgileri |
+| `transcript.js` | Normal video ve geçici Shorts sekmesinde kullanılan yedek transkript okuyucusu |
 | `ai.js` | API bağlantısı, ayarlar ve özetleme |
 | `chat.js`, `chat.css`, `chat-motion.css` | Sohbet akışı, görünümü ve geçişleri |
 | `disclosure.css`, `icons/` | Açılır bölüm stilleri ve eklenti simgeleri |

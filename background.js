@@ -25,8 +25,7 @@ chrome.runtime.onConnect.addListener(port => {
   port.onMessage.addListener(message => {
     if (started) return;
     started = true;
-    const videoId = message?.videoId;
-    const windowId = message?.windowId;
+    const { videoId, windowId } = message || {};
     const run = async () => {
       try {
         if (typeof videoId !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(videoId)) throw new Error('Invalid video ID');
@@ -43,6 +42,7 @@ chrome.runtime.onConnect.addListener(port => {
         if (disconnected) return;
         await chrome.tabGroups.update(groupId, { title: 'TSAVY', color: 'blue', collapsed: true });
         if (disconnected) return;
+        const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
         const ready = new Promise((resolve, reject) => {
           const cleanup = () => {
             clearTimeout(timer);
@@ -51,7 +51,7 @@ chrome.runtime.onConnect.addListener(port => {
             cancelWait = null;
           };
           const onUpdated = (id, change, updatedTab) => {
-            if (id === tabId && updatedTab.url === `https://www.youtube.com/watch?v=${videoId}` && (change.url || change.status === 'complete')) {
+            if (id === tabId && updatedTab.url === watchUrl && change.status === 'complete') {
               cleanup();
               resolve();
             }
@@ -67,14 +67,13 @@ chrome.runtime.onConnect.addListener(port => {
           chrome.tabs.onUpdated.addListener(onUpdated);
           chrome.tabs.onRemoved.addListener(onRemoved);
         });
-        // Attach a handler immediately: navigation can fail while readiness is pending.
-        const navigation = chrome.tabs.update(tabId, { url: `https://www.youtube.com/watch?v=${videoId}` });
+        const navigation = chrome.tabs.update(tabId, { url: watchUrl });
         await Promise.all([navigation, ready]);
         if (disconnected) return;
         const [result] = await chrome.scripting.executeScript({ target: { tabId }, injectImmediately: true, func: extractTranscript, args: [videoId] });
         if (disconnected) return;
         port.postMessage({ data: result?.result });
-      } catch (error) {
+      } catch (_) {
         cancelWait?.();
         if (!disconnected) {
           try { port.postMessage({ error: true }); } catch (_) {}

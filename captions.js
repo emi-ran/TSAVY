@@ -8,23 +8,33 @@ async function extractPlayerCaptions(expectedVideoId) {
   const player = document.querySelector(location.pathname.startsWith('/shorts/') ? '#shorts-player' : '#movie_player');
   const response = player?.getPlayerResponse?.();
   if (response?.videoDetails?.videoId !== expectedVideoId) return null;
-  const selectedTrack = player.getOption?.('captions', 'track');
-  const language = selectedTrack?.languageCode;
-  const track = response.captions?.playerCaptionsTracklistRenderer?.captionTracks?.find(item => item.languageCode === language);
-  if (!track) return null;
+  const tracks = response.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  if (!tracks?.length) return null;
+  const wasOn = player.isSubtitlesOn?.();
+  let selectedTrack = player.getOption?.('captions', 'track');
+  let language = selectedTrack?.languageCode;
+  let enabledByExtension = false;
   const findRequest = () => performance.getEntriesByType('resource').map(entry => {
     try { return new URL(entry.name); } catch { return null; }
   }).filter(url => url?.origin === 'https://www.youtube.com' && url.pathname === '/api/timedtext' && url.searchParams.get('v') === expectedVideoId && url.searchParams.get('lang') === language && url.searchParams.get('fmt') === 'json3').at(-1);
-  let request = findRequest();
-  // The player's own request supplies its current signature and proof token.
-  if (!request && player.isSubtitlesOn?.()) {
-    player.setOption?.('captions', 'track', {});
-    player.setOption?.('captions', 'track', selectedTrack);
-  }
-  for (let i = 0; !request && i < 6; i++) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    if (currentId() !== expectedVideoId) return null;
-    request = findRequest();
+  let request = language ? findRequest() : null;
+  try {
+    if (!request && wasOn === false && typeof player.toggleSubtitles === 'function') {
+      player.toggleSubtitles();
+      enabledByExtension = true;
+    } else if (!request && wasOn && selectedTrack?.languageCode) {
+      player.setOption?.('captions', 'track', {});
+      player.setOption?.('captions', 'track', selectedTrack);
+    }
+    for (let i = 0; !request && i < 20; i++) {
+      if (currentId() !== expectedVideoId || player.getPlayerResponse?.()?.videoDetails?.videoId !== expectedVideoId) return null;
+      selectedTrack = player.getOption?.('captions', 'track');
+      language = selectedTrack?.languageCode;
+      if (language) request = findRequest();
+      if (!request) await new Promise(resolve => setTimeout(resolve, 250));
+    }
+  } finally {
+    if (enabledByExtension && currentId() === expectedVideoId && player.getPlayerResponse?.()?.videoDetails?.videoId === expectedVideoId && player.isSubtitlesOn?.()) player.toggleSubtitles();
   }
   if (!request) return null;
   const controller = new AbortController();
@@ -51,11 +61,24 @@ async function extractPlayerCaptions(expectedVideoId) {
     }
     if (!lines.length) return null;
     const details = response.videoDetails;
+    const ownerUrl = response.microformat?.playerMicroformatRenderer?.ownerProfileUrl;
+    const ownerLink = player.closest('ytd-reel-video-renderer')?.querySelector('a[href^="/@"]')?.href;
+    let channelUrl = details.channelId ? `https://www.youtube.com/channel/${encodeURIComponent(details.channelId)}` : '';
+    for (const value of [ownerUrl, ownerLink]) {
+      if (!value) continue;
+      try {
+        const url = new URL(value, location.origin);
+        if (url.origin === location.origin && /^\/@[^/]+\/?$/.test(url.pathname)) {
+          channelUrl = `${url.origin}${url.pathname.replace(/\/$/, '')}`;
+          break;
+        }
+      } catch (_) {}
+    }
     return {
       title: details.title || document.title.replace(/\s*- YouTube$/, ''),
       lines,
       channelName: details.author || '',
-      channelUrl: details.channelId ? `https://www.youtube.com/channel/${encodeURIComponent(details.channelId)}` : '',
+      channelUrl,
       description: details.shortDescription || '',
       videoUrl: `https://www.youtube.com/watch?v=${expectedVideoId}`
     };

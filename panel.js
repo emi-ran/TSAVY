@@ -1,6 +1,7 @@
 const status = document.querySelector('#status');
 const segments = document.querySelector('#segments');
 const videoTitle = document.querySelector('#video-title');
+const videoChannel = document.querySelector('#video-channel');
 const refresh = document.querySelector('#refresh');
 let generation = 0;
 let transcript = null;
@@ -22,9 +23,8 @@ function getYouTubeVideoId(value) {
 function loadShortsTranscript(videoId, windowId) {
   return new Promise((resolve, reject) => {
     const port = chrome.runtime.connect({ name: 'shorts-transcript' });
-    const cancel = () => finish(new Error('Transcript request cancelled'));
-    cancelShorts = cancel;
     let settled = false;
+    const cancel = () => finish(new Error('Transcript request cancelled'));
     const finish = (error, data) => {
       if (settled) return;
       settled = true;
@@ -32,6 +32,7 @@ function loadShortsTranscript(videoId, windowId) {
       port.disconnect();
       if (error) reject(error); else resolve(data);
     };
+    cancelShorts = cancel;
     port.onMessage.addListener(message => {
       if (message.tabId !== undefined) temporaryTabs.add(message.tabId);
       else finish(message.error ? new Error('Transcript unavailable') : null, message.data);
@@ -40,6 +41,7 @@ function loadShortsTranscript(videoId, windowId) {
     port.postMessage({ videoId, windowId });
   });
 }
+
 const accordion = document.querySelector('.t-acc');
 const accordionHead = accordion.querySelector('.t-acc-head');
 const accordionPanel = document.querySelector('#transcript-panel');
@@ -57,6 +59,8 @@ async function readTranscript() {
   resetSummary();
   segments.replaceChildren();
   videoTitle.textContent = 'Video bekleniyor';
+  videoChannel.hidden = true;
+  videoChannel.textContent = '';
   status.textContent = 'Altyazılar aranıyor…';
   refresh.disabled = true;
   try {
@@ -68,15 +72,20 @@ async function readTranscript() {
       status.textContent = 'Başlamak için bir YouTube videosu aç.';
       return;
     }
-    const url = new URL(tab.url);
+    status.textContent = 'Altyazı isteği okunuyor…';
     let data;
-    if (url.pathname === '/watch') {
-      data = (await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: extractTranscript, args: [videoId] }))[0]?.result;
-    } else {
-      status.textContent = 'Shorts altyazıları okunuyor…';
+    try {
       data = (await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', func: extractPlayerCaptions, args: [videoId] }))[0]?.result;
+    } catch (_) {}
+    if (myGeneration !== generation) return;
+    if (!data?.lines?.length) {
+      const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
       if (myGeneration !== generation) return;
-      if (!data?.lines?.length) {
+      if (active?.id !== tab.id || active.url !== tab.url) return void readTranscript();
+      if (new URL(tab.url).pathname === '/watch') {
+        status.textContent = 'YouTube transkripti okunuyor…';
+        data = (await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: extractTranscript, args: [videoId] }))[0]?.result;
+      } else {
         status.textContent = 'Transkript TSAVY grubunda hazırlanıyor…';
         data = await loadShortsTranscript(videoId, tab.windowId);
       }
@@ -95,6 +104,9 @@ async function readTranscript() {
     document.querySelector('#summarize').disabled = false;
     videoTitle.textContent = data.title;
     videoTitle.hidden = false;
+    const handle = /^https:\/\/www\.youtube\.com\/(\@[^/?#]+)\/?$/.exec(data.channelUrl || '')?.[1];
+    videoChannel.textContent = [data.channelName, handle && handle.toLowerCase() !== data.channelName?.toLowerCase() ? handle : ''].filter(Boolean).join(' · ');
+    videoChannel.hidden = !videoChannel.textContent;
     status.textContent = '';
     const fragment = document.createDocumentFragment();
     for (const line of data.lines) {

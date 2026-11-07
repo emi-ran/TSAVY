@@ -18,6 +18,7 @@ async function extractTranscript(expectedVideoId) {
   try {
     let lines = findLines();
     if (!lines.length) {
+      if (!transcriptPanel()) {
       const descriptionControl = () => [...document.querySelectorAll('ytd-text-inline-expander #expand, ytd-watch-metadata #expand, yt-side-rail-view-model button')].find(button => button.getClientRects().length && (button.id === 'expand' || /^(description|açıklama)(,|$)/i.test(button.getAttribute('aria-label') || '')));
       let expand = descriptionControl();
       for (let i = 0; i < 40 && !expand; i++) {
@@ -26,7 +27,7 @@ async function extractTranscript(expectedVideoId) {
         expand = descriptionControl();
       }
       openedDescription = !!expand?.closest('yt-side-rail-view-model') && !descriptionPanel();
-      expand?.click();
+      if (!descriptionPanel()) expand?.click();
       let transcriptButton;
       for (let i = 0; i < 40 && !transcriptButton; i++) {
         transcriptButton = [...document.querySelectorAll('ytd-video-description-transcript-section-renderer button')].find(button => button.getClientRects().length && /^(show transcript|transkripti göster|transkripti goster|dökümü göster|dökümü goster)$/i.test((button.textContent || button.getAttribute('aria-label') || '').trim()));
@@ -37,7 +38,8 @@ async function extractTranscript(expectedVideoId) {
       }
       if (!transcriptButton) return { title: readTitle(), lines: [], error: 'Transkript düğmesi bulunamadı. Video altyazı içermiyor olabilir veya YouTube’un arayüz dili desteklenmiyor olabilir.' };
       openedByExtension = !transcriptPanel();
-      transcriptButton.click();
+      if (openedByExtension) transcriptButton.click();
+      }
       for (let i = 0; i < 40 && !lines.length; i++) {
         await wait(250);
         if (!isExpectedVideo()) return null;
@@ -46,8 +48,13 @@ async function extractTranscript(expectedVideoId) {
     }
     const channel = document.querySelector('ytd-video-owner-renderer #channel-name a');
     const channelName = channel?.textContent.trim() || '';
-    const channelLink = channel?.href ? new URL(channel.href) : null;
-    const channelUrl = channelLink?.hostname === 'www.youtube.com' ? `${channelLink.origin}${channelLink.pathname}` : '';
+    const owner = channel?.closest('ytd-video-owner-renderer');
+    const handleLink = [...(owner?.querySelectorAll('a[href]') || [])].find(link => {
+      const url = new URL(link.href, location.href);
+      return link.getClientRects().length && url.origin === 'https://www.youtube.com' && /^\/@[^/]+\/?$/.test(url.pathname);
+    });
+    const channelLink = (handleLink || channel)?.href ? new URL((handleLink || channel).href, location.href) : null;
+    const channelUrl = channelLink?.origin === 'https://www.youtube.com' ? `${channelLink.origin}${channelLink.pathname}` : '';
     const description = [...document.querySelectorAll('ytd-watch-metadata #description-inline-expander #expanded yt-attributed-string, ytd-watch-metadata #description-inline-expander #expanded yt-formatted-string, ytd-expandable-video-description-body-renderer #expanded yt-attributed-string, ytd-expandable-video-description-body-renderer #snippet-text yt-attributed-string')].map(item => item.textContent.trim()).find(Boolean) || '';
     return { title: readTitle(), lines, channelName, channelUrl, description, videoUrl: `https://www.youtube.com/watch?v=${encodeURIComponent(expectedVideoId)}` };
   } finally {
